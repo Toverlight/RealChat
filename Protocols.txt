@@ -1,0 +1,147 @@
+>>>内部协议
+异常协议：
+	客户端本身：
+		EXCEPTION:<position><e.getMessage()>
+		position: 异常发生位置，函数名称
+		e.getMessage(): 异常详情
+	服务器本身：
+		EXCEPTION:<position>:<e.getMessage()>
+		position: 异常发生位置，函数名称
+		e.getMessage(): 异常详情
+
+重连协议：
+	仅用于客户端后台通知前台：
+		RECONNECTED:<position>
+		position: 重连发生位置，函数名称
+
+>>>C/S间协议
+登录协议：
+	来自客户端：
+	请求：
+		LOGIN:<uid>:<password>
+		以LOGIN:开头，后面是UID和密码，并用冒号隔开。
+	来自服务端：
+		LOGIN:<uid>:<flag>:<err code>:<avatar>
+		以LOGIN开头，后面字段用冒号隔开。
+		uid: 用户请求登录到的uid；
+		flag: 为 0 时、成功，为 1 时、失败，其他值非法；
+		err code: 为 0 时、成功（该字段也无用，作为填充），其他值时 对应某个错误消息；
+		avatar: 用户的头像。为 0 时，失败（作为填充），其他值时 是该头像文件。
+
+<relation list ( [ (uid/gid, nickname/groupname, avatar) [, ...] ] ) >
+
+注册协议：
+	来自客户端：
+	请求（验证码）：
+		REGISTER:V:<email>
+	请求（注册）：
+		REGISTER:<nickname>:<email>:<password>:<verification>:<avatar>
+		以REGISTER开头，后面字段同理，用冒号隔开。
+	来自服务端：
+		REGISTER:<flag>:<err code>
+		以REGISTER开头，后面字段用冒号隔开。
+		flag: 为 0 时、成功，为 1 时、失败，其他值非法；
+		err code: 为 0 时、成功（该字段也无用，作为填充），其他值时 对应某个错误消息。
+
+找回账户协议：
+	来自客户端：
+	请求（验证码）：
+		RETRIEVE:V:<uid>
+	请求（找回账户）：
+		RETRIEVE:<uid>:<new password>:<verification>
+		以RETRIEVE开头，后面字段同理，用冒号隔开。
+	来自服务端：
+		RETRIEVE:<flag>:<err code>
+		以RETRIEVE开头，后面字段用冒号隔开。
+		flag: 为 0 时、成功，为 1 时、失败，其他值非法；
+		err code: 为 0 时、成功（该字段也无用，作为填充），其他值时 对应某个错误消息。
+
+抓取协议：
+	来自客户端：
+	请求：（自身数据）
+		FETCH:<data id>
+		data id: 数据标识（助记整型常量）
+		（对方数据）
+		FETCH:<data id>:<other id>
+		
+	来自服务端：
+		FETCH:<data id>:<content>
+		data id: 数据标识（助记整型常量），若为 0，表示拒传。
+		content: 数据内容。拒传时，填充 0 。
+		当dataId为FRIENDS或GROUPS时，content的各个Item以 | 号做分隔，各个字段以 . 号分隔，null值以“”传输。
+		FETCH:<data id>:<other id>:<content>
+
+更新状态协议：
+	仅服务器端向客户端：
+		UPDATE:<uid>:<status>
+		status: 0 离线，1 在线
+		UPDATE:<gid>:<people num>
+
+聊天协议：
+	来自客户端：
+	请求：
+		CHAT:<flag>:<target id>:<nickname>:<message>
+		以CHAT开头，后面字段用冒号隔开。
+		flag: 为 0 时、私聊，为 1 时、群聊，其他值非法；
+		target id: 私聊是对方 uid 6 位 ，群聊是群组 gid 5 位；
+		注意，message在发送之前先判断长度是否超过阈值，不能发太长的消息。
+	（回应：
+		CHAT:<flag>:<target id>:<nickname>:<err code>
+		以CHAT开头，后面字段用冒号隔开。
+		flag: 为 0 时、成功，为 1 时、失败，其他值非法；
+		err code: 为 0 时、成功（该字段也无用，作为填充），其他值时 对应某个错误消息。）目前没有
+	来自服务器端：
+	( 回应发送方：
+		CHAT:<flag>:<target id>:<nickname>:<err code>
+		以CHAT开头，后面字段用冒号隔开。
+		flag: 为 0 时、成功，为 1 时、失败，其他值非法；
+		err code: 为 0 时、成功（该字段也无用，作为填充），其他值时 对应某个错误消息。) 目前没有
+	转发：
+		CHAT:<flag>:<gid>:<uid>:<nickname>:<message>
+		flag: 0 私聊， 1 群聊
+		gid: 若群聊，则为群gid，若不是，填充0
+		uid: 发送者的uid
+	
+广播协议：
+	仅服务器端向客户端：
+		SYSTEM:<content>
+		以SYSTEM开头，后面是广播消息。
+
+搜索协议：
+	来自客户端：
+	请求：
+		SEARCH:<flag>:<id>:<usage>
+		flag: 0 用户，1 群组
+		id: uid/gid
+		usage: 用途，如用来查找要添加好友的用户或要加入的群组等
+	来自服务器端：
+		SEARCH:<flag>:<usage>:<item>:<avatars>
+		flag: 0 用户，1 群组
+		item: UserItem或GroupItem，字段用 , 分隔，null值以0传输。
+			（后面可能加入昵称或群组名称搜索功能，可能有多个符合的结果，若有多个，用 | 号分隔）
+		avatars: 头像（若有多个，以 | 分隔）（解析后索引与<item>对号入座）
+
+申请协议：
+	来自客户端：
+	请求：
+		REQUEST:<flag>:<target id>:<nickname>
+		flag: 0 用户，1 群组（目前是直接加入）
+		target id: 对方uid/gid
+		nickname: 自己的昵称
+	批阅申请：
+		REQUEST:<flag>:<requester id>:<option>:<userItem>
+		requester id: 发起申请的用户 uid
+		option: 0 同意，1 拒绝
+		userItem: 若同意，则为自己UserItem，字段以 , 号分隔；拒绝则为 ""
+	来自服务器端：
+	转发请求：
+		REQUEST:<flag>:<requester id>:<nickname>
+		flag: 0 用户，1 群组（目前没有）
+		requester id: 申请人uid
+		nickname: 发起申请的人的昵称
+	回应发送方：
+		REQUEST:<flag>:<target id>:<option>:<userItem>
+		flag: 0 用户，1 群组（目前没有）
+		target id: 对方 uid/ 群 gid
+		option: 0 对方同意，1 对方拒绝
+		userItem: 若同意，则为自己UserItem，字段以 , 号分隔；拒绝则为 ""
