@@ -12,7 +12,9 @@
 
 # Design (flow)
 
-![flow chart](design_charts/RealChatSystemBasicFlowChart.drawio.png)
+<p align="center">
+  <img src="design_charts/RealChatSystemBasicFlowChart.drawio.png" alt="演示效果" width="600" />
+</p>
 
 其他当时的设计草图（~~真的很潦草~~）：[design_charts文件夹下](design_charts/)
 
@@ -22,33 +24,33 @@
 
 ## Server UI
 
-![server](screenshots/server_ui.png)
+<img src="screenshots/server_ui.png" alt="演示效果" width="400" />
 
 ## Client UI
 
 ### Login (Failed)
 
-![client lf](screenshots/login_failed.png)
+<img src="screenshots/login_failed.png" alt="演示效果" width="400" />
 
 ### Login (Passed)
 
-![client lp](screenshots/login_passed.png)
+<img src="screenshots/login_passed.png" alt="演示效果" width="400" />
 
 ### Register
 
-![client reg](screenshots/register.png)
+<img src="screenshots/register.png" alt="演示效果" width="400" />
 
 ### Chat (public)
 
-![client chat public](screenshots/chat_public.png)
+<img src="screenshots/chat_public.png" alt="演示效果" width="400" />
 
 ### Chat (private)
 
-![client chat private](screenshots/chat_private.png)
+<img src="screenshots/chat_private.png" alt="演示效果" width="400" />
 
 ### Add Friends
 
-![friend](screenshots/friend_search.png)
+<img src="screenshots/friend_search.png" alt="演示效果" width="400" />
 
 # Note
 
